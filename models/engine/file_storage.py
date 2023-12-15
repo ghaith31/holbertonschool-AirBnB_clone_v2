@@ -1,6 +1,13 @@
 #!/usr/bin/python3
 """This module defines a class to manage file storage for hbnb clone"""
 import json
+from models.base_model import BaseModel
+from models.user import User
+from models.place import Place
+from models.state import State
+from models.city import City
+from models.amenity import Amenity
+from models.review import Review
 
 
 class FileStorage:
@@ -10,14 +17,15 @@ class FileStorage:
 
     def all(self, cls=None):
         """Returns a dictionary of models currently in storage"""
-        if cls is None:
-            return FileStorage.__objects
-        else:
-            dict = {}
-            for key, value in FileStorage.__objects.items():
-                if isinstance(value, cls):
-                    dict[key] = value
-        return dict
+        if cls:
+            if type(cls) == str:
+                cls = eval(cls)
+            my_dict = {}
+            for key, value in self.__objects.items():
+                if type(value) == cls:
+                    my_dict[key] = value
+            return my_dict
+        return self.__objects
 
     def new(self, obj):
         """Adds new object to storage dictionary"""
@@ -34,13 +42,6 @@ class FileStorage:
 
     def reload(self):
         """Loads storage dictionary from file"""
-        from models.base_model import BaseModel
-        from models.user import User
-        from models.place import Place
-        from models.state import State
-        from models.city import City
-        from models.amenity import Amenity
-        from models.review import Review
 
         classes = {
                     'BaseModel': BaseModel, 'User': User, 'Place': Place,
@@ -57,12 +58,13 @@ class FileStorage:
             pass
 
     def delete(self, obj=None):
-        """Deletes obj from __objects if obj is not None"""
-        if obj is None:
-            return
-        else:
+        """Deletes and object from __objects"""
+        if (obj):
             key = "{}.{}".format(type(obj).__name__, obj.id)
-            self.__objects.pop(key, None)
+            del self.__objects[key]
 
     def close(self):
-        reload()
+        """Calls reload method for deserializing
+        the JSON file to objects
+        """
+        self.reload()
